@@ -1,3 +1,6 @@
+# Hangman Phase II
+# Computer Guesses Letters Randomly
+
 class Hangman
   attr_reader :guesser, :referee, :board
 
@@ -6,7 +9,7 @@ class Hangman
       guesser: 'player1',
       referee: 'player2',
     }.merge(players)
-    @board = []
+    @board = ""
   end
 
   def guesser
@@ -28,7 +31,7 @@ class Hangman
   end
 
   def take_turn
-    puts @board.join
+    puts @board
     guess = guesser.guess(@board)
     letter_idxs = referee.check_guess(guess)
     unless letter_idxs.empty?
@@ -44,37 +47,22 @@ class Hangman
   end
 
   def won?
-    @board.none? { |letter| letter == "_"} && referee.dictionary.index(@board.join)
-  end
-
-  def lost?
-    @board.none? { |letter| letter == "_"} && !referee.dictionary.index(@board.join) || guesser.guess(@board) == "_"
+    @board.chars.none? { |letter| letter == "_"} && referee.dictionary.index(@board)
   end
 
   def play
     setup
 
-    until won? || lost?
+    until won?
       take_turn
     end
 
-    if won?
-      puts "#{@board.join}"
-      puts "Winner! Game Over!"
-    else
-      puts "#{@board.join}"
-      puts "Sorry, you lost!"
-    end
+    puts "#{@board}"
+    puts "Winner! Game Over!"
   end
 end
 
 class HumanPlayer
-
-  attr_reader :dictionary
-
-  def initialize(dictionary)
-    @dictionary = dictionary
-  end
 
   def register_secret_length(length)
     secret_length = length
@@ -100,7 +88,7 @@ class HumanPlayer
     response = gets.chomp.strip.downcase
     if response == "y"
       puts "Please enter the index or indecies where the letter occurs in the secret word:"
-      indices = gets.chomp.strip.split(",").map! {|el| el.to_i}
+      indices = gets.chomp.strip.split(" ").map! {|el| el.to_i}
       return indices
     else
       return []
@@ -118,7 +106,6 @@ class ComputerPlayer
 
   def register_secret_length(length)
     secret_length = length
-    dictionary.select! { |word| word.length == secret_length }
   end
 
   def pick_secret_word
@@ -137,43 +124,11 @@ class ComputerPlayer
   end
 
   def guess(board)
-    dictionary_hash = Hash.new(0)
-
-    dictionary.each do |word|
-      word.each_char do |char|
-        dictionary_hash[char] += 1
-      end
-    end
-
-    board.compact.each do |letter|
-      dictionary_hash[letter] = 0
-    end
-
-    dictionary_hash.sort_by { |letters, values| values }.last.first
+    ("a".."z").to_a.sample
   end
 
   def handle_response(letter, arr)
-    counter = Hash.new(0)
 
-    if arr.empty?
-      dictionary.reject! { |word| word.include?(letter) }
-    else
-      dictionary.each do |word|
-        word.each_char do |char|
-          counter[word] += 1 if char == letter
-        end
-      end
-
-      arr.each do |idx|
-        dictionary.select! do |word|
-          word[idx] == letter && counter[word] == arr.length
-        end
-      end
-    end
-  end
-
-  def candidate_words
-    dictionary
   end
 end
 
@@ -181,7 +136,7 @@ end
 if __FILE__ == $PROGRAM_NAME
   dictionary = []
   File.foreach("lib/dictionary.txt") { |word| dictionary << word.strip }
-  ref = HumanPlayer.new(dictionary)
+  ref = HumanPlayer.new
   player1 = ComputerPlayer.new(dictionary)
   game = Hangman.new({guesser: player1, referee: ref})
   game.play
