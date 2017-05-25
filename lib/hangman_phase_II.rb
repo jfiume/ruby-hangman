@@ -50,19 +50,40 @@ class Hangman
     @board.chars.none? { |letter| letter == "_"} && referee.dictionary.index(@board)
   end
 
+  def lost?
+    @board.chars.none? { |letter| letter == "_"} && !referee.dictionary.index(@board)
+  end
+
   def play
     setup
 
-    until won?
+    until won? || lost?
       take_turn
     end
 
-    puts "#{@board}"
-    puts "Winner! Game Over!"
+    if won?
+      puts "#{@board}"
+      puts "Winner! Game Over!"
+    else
+      puts "#{@board}"
+      puts "Sorry, you lost!"
+    end
   end
 end
 
 class HumanPlayer
+
+  attr_reader :dictionary, :guessed_letters
+
+  def initialize(dictionary)
+    @dictionary = dictionary
+  end
+
+  def guessed_letters(guess)
+    @guessed_letters = [] unless @guessed_letters
+    @guessed_letters << guess if guess.length == 1
+    @guessed_letters
+  end
 
   def register_secret_length(length)
     secret_length = length
@@ -74,7 +95,8 @@ class HumanPlayer
   end
 
   def handle_response(guess, letter_idxs)
-
+    guessed_letters = guessed_letters(guess)
+    puts "Previously guessed letters: #{guessed_letters.join(", ")}"
   end
 
   def pick_secret_word
@@ -136,7 +158,7 @@ end
 if __FILE__ == $PROGRAM_NAME
   dictionary = []
   File.foreach("lib/dictionary.txt") { |word| dictionary << word.strip }
-  ref = HumanPlayer.new
+  ref = HumanPlayer.new(dictionary)
   player1 = ComputerPlayer.new(dictionary)
   game = Hangman.new({guesser: player1, referee: ref})
   game.play

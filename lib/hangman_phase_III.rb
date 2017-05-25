@@ -1,3 +1,6 @@
+# Hangman Phase III
+# Computer Guesses Intelligently
+
 class Hangman
   attr_reader :guesser, :referee, :board
 
@@ -70,7 +73,7 @@ end
 
 class HumanPlayer
 
-  attr_reader :dictionary
+  attr_reader :dictionary, :guessed_letters
 
   def initialize(dictionary)
     @dictionary = dictionary

@@ -39,7 +39,7 @@ class Hangman
         update_board(idx, guess)
       end
     end
-    guesser.handle_response
+    guesser.handle_response(guess)
   end
 
   def update_board(idx, match)
@@ -64,17 +64,32 @@ end
 
 class HumanPlayer
 
+  attr_reader :guessed_letters
+
+  def guessed_letters(guess)
+    @guessed_letters = [] unless @guessed_letters
+    @guessed_letters << guess if guess.length == 1
+    @guessed_letters
+  end
+
   def register_secret_length(length)
     secret_length = length
   end
 
   def guess
     puts "Please enter a guess:"
-    guess = gets.chomp.strip.downcase
+    letter_guess = gets.chomp.strip.downcase
+    if letter_guess.length > 1
+      puts "Error, too many letters. Please enter 1 letter only."
+      guess
+    end
+
+    letter_guess
   end
 
-  def handle_response
-    # going to flesh this method out more later
+  def handle_response(guess)
+    guessed_letters = guessed_letters(guess)
+    puts "Previously guessed letters: #{guessed_letters.join(", ")}"
   end
 end
 
